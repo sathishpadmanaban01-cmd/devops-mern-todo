@@ -18,5 +18,5 @@ jobs:
           script: | 
            cd devops-mern-todo/ 
            git pull origin main
-           docker-compose down
-           docker-compose up --build -d
+           docker compose down
+           docker compose up --build -d
