@@ -1,19 +1,33 @@
-# Use Node.js LTS
-FROM node:18
+# ---------- Stage 1: Build ----------
+FROM node:18-alpine AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files first to leverage Docker cache
+# Copy package files for caching
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci
 
-COPY . .
+# Copy the rest of the source
+COPY . ./
 
+# Build frontend (React / Vue / Angular)
 RUN npm run build
 
+# ---------- Stage 2: Serve ----------
+FROM node:18-alpine AS runner
+
+WORKDIR /app
+
+# Install a small HTTP server (serve)
+RUN npm install -g serve
+
+# Copy built files from builder
+COPY --from=builder /app/dist ./dist
+
+# Expose frontend port
 EXPOSE 3000
 
-CMD ["npx", "serve", "-s", "dist"]
+# Run the server
+CMD ["serve", "-s", "dist"]
